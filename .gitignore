@@ -12,6 +12,10 @@ __pycache__/
 # =====================
 rag_env/
 
+# .env File
+# =========
+.env
+
 # Jupyter Notebook
 # ================
 .ipynb_checkpoints/
