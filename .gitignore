@@ -1,0 +1,23 @@
+# Operating System Files
+# ======================
+# macOS
+.DS_Store
+
+# Python Bytecode
+# ===============
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+# =====================
+rag_env/
+
+# Jupyter Notebook
+# ================
+.ipynb_checkpoints/
+
+# IDE Files
+# =========
+# VSCode
+.vscode/
+*.code-workspace
