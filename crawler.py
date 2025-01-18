@@ -10,6 +10,10 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
+# set the event loop policy for Windows
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 # --- Crawl4AI Imports ---
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 
@@ -58,13 +62,13 @@ def chunk_text(text: str, chunk_size: int = 5000) -> List[str]:
 
         chunk = text[start:end]
 
-        # 2) If no code block boundary, try paragraph boundary
+        # try paragraph boundary
         if '\n\n' in chunk:
             last_break = chunk.rfind('\n\n')
             if last_break > chunk_size * 0.3:
                 end = start + last_break
 
-        # 3) If no paragraph break, try sentence break
+        # If no paragraph break, try sentence break
         elif '. ' in chunk:
             last_period = chunk.rfind('. ')
             if last_period > chunk_size * 0.3:
@@ -94,7 +98,7 @@ Keep both short but informative."""
     try:
         # Adjust model or parameters to your needs
         response = await openai_client.chat.completions.create(
-            model=os.getenv("LLM_MODEL", "gpt-4"),
+            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
             messages=[
                 {"role": "system", "content": system_prompt},
                 {
@@ -117,7 +121,7 @@ async def get_embedding(text: str) -> List[float]:
     """
     try:
         response = await openai_client.embeddings.create(
-            model="text-embedding-ada-002",  # or your chosen embedding model
+            model="text-embedding-3-small",  # or your chosen embedding model
             input=text
         )
         return response.data[0].embedding
@@ -213,7 +217,7 @@ async def crawl_parallel(urls: List[str], max_concurrent: int = 5):
     # Choose how you want the crawler to handle caching
     crawl_config = CrawlerRunConfig(
         cache_mode=CacheMode.BYPASS,
-        css_selector="#main-content"
+        css_selector="#main-content, article"
         # ,excluded_tags=["header", "footer", "nav", "aside"]
 )
 
