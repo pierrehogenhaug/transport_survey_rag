@@ -6,16 +6,16 @@ import os
 import streamlit as st
 import json
 import logfire
-from supabase import Client
-# If you're using the standard Supabase Python client:
-# from supabase import create_client
+# Use the official Supabase Python client
+from supabase import create_client, Client
 
-# If you have your own async OpenAI client or a custom wrapper, import it here.
-# Otherwise, for normal usage with the 'openai' library, you'd do:
-# import openai
+# If you want to use the standard OpenAI Python library (synchronous), you'd do:
+#   import openai
+#   openai.api_key = ...
+# But here you're using `AsyncOpenAI` from the 'openai' package:
 from openai import AsyncOpenAI
 
-# Import your own pydantic_ai classes; adjust paths/modules as needed
+# Import your pydantic_ai classes
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
@@ -29,38 +29,35 @@ from pydantic_ai.messages import (
     ModelMessagesTypeAdapter
 )
 
-# Load environment variables from .env (optional, if you want fallback .env values)
-from dotenv import load_dotenv
-load_dotenv()
+# Remove or comment out dotenv usage if you rely solely on st.secrets 
+# from dotenv import load_dotenv
+# load_dotenv()
 
-# Let the user input an OpenAI API key via the sidebar
-# If provided, it overrides any .env or environment-based key
+# ------------------ OpenAI API Key from Sidebar ------------------ #
 api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password")
 if not api_key:
     st.error("OpenAI API key is required to run the app.")
-    st.stop()  # Halt execution until the key is provided
+    st.stop()
 
-# Optionally set it in the environment as well (some libs may read from env)
+# (Optional) If you want to set it in the environment:
 os.environ["OPENAI_API_KEY"] = api_key
-from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
-# Initialize OpenAI client with the provided API key
+# Create the async OpenAI client with user-provided key
 openai_client = AsyncOpenAI(api_key=api_key)
 
-# Initialize Supabase client (this snippet is an example; adapt to your usage)
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
+# ------------------ Supabase from Streamlit secrets ------------------ #
+# Make sure you have SUPABASE_URL and SUPABASE_SERVICE_KEY (or ANON_KEY) 
+# in your .streamlit/secrets.toml or from your Streamlit Cloud "Secrets" settings.
+supabase_url = st.secrets["SUPABASE_URL"]
+supabase_key = st.secrets["SUPABASE_SERVICE_KEY"]
 
-# If using the standard Supabase Python client:
-# supabase: Client = create_client(supabase_url, supabase_key)
+supabase: Client = create_client(supabase_url, supabase_key)
 
-# If you have a direct `Client` constructor:
-supabase: Client = Client(
-    supabase_url,
-    supabase_key
-)
+# Alternatively, if you're using the constructor directly:
+# from supabase import Client
+# supabase = Client(supabase_url, supabase_key)
 
-# Configure logfire to suppress warnings (optional)
+# Optionally configure logfire to suppress warnings
 logfire.configure(send_to_logfire='never')
 
 class ChatMessage(TypedDict):
@@ -75,15 +72,12 @@ def display_message_part(part):
     Customize how you display system prompts, user prompts,
     tool calls, tool returns, etc.
     """
-    # system-prompt
     if part.part_kind == 'system-prompt':
         with st.chat_message("system"):
             st.markdown(f"**System**: {part.content}")
-    # user-prompt
     elif part.part_kind == 'user-prompt':
         with st.chat_message("user"):
             st.markdown(part.content)
-    # text
     elif part.part_kind == 'text':
         with st.chat_message("assistant"):
             st.markdown(part.content)
@@ -93,49 +87,48 @@ async def run_agent_with_streaming(user_input: str):
     Run the agent with streaming text for the user_input prompt,
     while maintaining the entire conversation in `st.session_state.messages`.
     """
+    from rag_agent import pydantic_ai_expert, PydanticAIDeps
+
     try:
         # Prepare dependencies using the user-provided API key
         deps = PydanticAIDeps(
             supabase=supabase,
-            openai_client=openai_client  # pass your openai client here
+            openai_client=openai_client
         )
 
-        # Run the agent in a stream
+        # Run the agent in a streaming fashion
         async with pydantic_ai_expert.run_stream(
             user_input,
             deps=deps,
             message_history=st.session_state.messages[:-1],  # pass entire conversation so far
         ) as result:
-            # We'll gather partial text to show incrementally
             partial_text = ""
             message_placeholder = st.empty()
 
-            # Render partial text as it arrives
             async for chunk in result.stream_text(delta=True):
                 partial_text += chunk
                 message_placeholder.markdown(partial_text)
 
-            # Now that the stream is finished, we have a final result.
-            # Add new messages from this run, excluding user-prompt messages
+            # Add newly-generated messages (excluding user-prompt duplicates)
             filtered_messages = [
                 msg for msg in result.new_messages()
                 if not (hasattr(msg, 'parts') and any(part.part_kind == 'user-prompt' for part in msg.parts))
             ]
             st.session_state.messages.extend(filtered_messages)
 
-            # Add the final response to the messages
+            # Add the final response to the conversation
             st.session_state.messages.append(
                 ModelResponse(parts=[TextPart(content=partial_text)])
             )
     except Exception as e:
         st.error("An error occurred while processing your request. Please check your API key and try again.")
-        # Optionally log the exception 'e' here
+        # Optionally log the exception, e.g. st.write(e)
 
 async def main():
     st.title("Danish National Travel Survey RAG")
     st.write("Ask any questions about the Danish National Travel Survey, including data procedures, methodologies, or survey results.")
 
-    # Initialize chat history in session state if not present
+    # Initialize chat history in session state
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -149,12 +142,9 @@ async def main():
     user_input = st.chat_input("Which questions do you have about TU?")
 
     if user_input:
-        # Append a new user request to the conversation
         st.session_state.messages.append(
             ModelRequest(parts=[UserPromptPart(content=user_input)])
         )
-        
-        # Display the user prompt in the UI
         with st.chat_message("user"):
             st.markdown(user_input)
 
