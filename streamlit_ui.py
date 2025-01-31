@@ -28,7 +28,6 @@ from pydantic_ai.messages import (
     RetryPromptPart,
     ModelMessagesTypeAdapter
 )
-from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
 # Load environment variables from .env (optional, if you want fallback .env values)
 from dotenv import load_dotenv
@@ -43,6 +42,7 @@ if not api_key:
 
 # Optionally set it in the environment as well (some libs may read from env)
 os.environ["OPENAI_API_KEY"] = api_key
+from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
 # Initialize OpenAI client with the provided API key
 openai_client = AsyncOpenAI(api_key=api_key)
