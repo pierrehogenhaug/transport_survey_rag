@@ -6,7 +6,7 @@ import os
 import streamlit as st
 import json
 import logfire
-from supabase import Client
+from supabase import create_client
 from openai import AsyncOpenAI
 
 # Import all the message part classes
@@ -42,10 +42,15 @@ os.environ["OPENAI_API_KEY"] = api_key
 openai_client = AsyncOpenAI(api_key=api_key)
 
 # Initialize the Supabase client.
-supabase: Client = Client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_KEY")
-)
+# Note: If you're using the newer supabase-py package, you typically use create_client.
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+    st.warning("Supabase URL or Service Key not found. Make sure they are set in your .env file.")
+    supabase = None
+else:
+    supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # Configure logfire to suppress warnings (optional)
 logfire.configure(send_to_logfire='never')
@@ -80,12 +85,11 @@ async def run_agent_with_streaming(user_input: str):
     Run the agent with streaming text for the user_input prompt,
     while maintaining the entire conversation in `st.session_state.messages`.
     """
-    # Prepare dependencies, including the freshly initialized openai_client.
     try:
         # Prepare dependencies using the (now valid) API key.
         deps = PydanticAIDeps(
             supabase=supabase,
-            openai_client=AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+            openai_client=openai_client
         )
 
         # Run the agent in a stream
@@ -116,9 +120,8 @@ async def run_agent_with_streaming(user_input: str):
                 ModelResponse(parts=[TextPart(content=partial_text)])
             )
     except Exception as e:
-        # Log the full error details somewhere secure (e.g., your logs)
         st.error("An error occurred while processing your request. Please check your API key and try again.")
-        # Optionally, log e or use your logging framework here.
+        # Optionally, log or print(e) for debugging.
 
 async def main():
     st.title("Danish National Travel Survey RAG")
@@ -138,7 +141,7 @@ async def main():
     user_input = st.chat_input("Which questions do you have about TU?")
 
     if user_input:
-        # Append a new request to the conversation explicitly
+        # Append a new request to the conversation
         st.session_state.messages.append(
             ModelRequest(parts=[UserPromptPart(content=user_input)])
         )
