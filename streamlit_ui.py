@@ -6,10 +6,16 @@ import os
 import streamlit as st
 import json
 import logfire
-from supabase import create_client
+from supabase import Client
+# If you're using the standard Supabase Python client:
+# from supabase import create_client
+
+# If you have your own async OpenAI client or a custom wrapper, import it here.
+# Otherwise, for normal usage with the 'openai' library, you'd do:
+# import openai
 from openai import AsyncOpenAI
 
-# Import all the message part classes
+# Import your own pydantic_ai classes; adjust paths/modules as needed
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
@@ -24,33 +30,35 @@ from pydantic_ai.messages import (
 )
 from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
-# Load environment variables from .env
+# Load environment variables from .env (optional, if you want fallback .env values)
 from dotenv import load_dotenv
 load_dotenv()
 
-# Let the user input an OpenAI API key via the sidebar.
-# If provided, it overrides the value from .env.
+# Let the user input an OpenAI API key via the sidebar
+# If provided, it overrides any .env or environment-based key
 api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password")
 if not api_key:
     st.error("OpenAI API key is required to run the app.")
     st.stop()  # Halt execution until the key is provided
 
-# Set the API key in the environment so that downstream modules (like rag_agent) can pick it up
+# Optionally set it in the environment as well (some libs may read from env)
 os.environ["OPENAI_API_KEY"] = api_key
 
-# Initialize the OpenAI client with the determined API key.
+# Initialize OpenAI client with the provided API key
 openai_client = AsyncOpenAI(api_key=api_key)
 
-# Initialize the Supabase client.
-# Note: If you're using the newer supabase-py package, you typically use create_client.
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+# Initialize Supabase client (this snippet is an example; adapt to your usage)
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
-    st.warning("Supabase URL or Service Key not found. Make sure they are set in your .env file.")
-    supabase = None
-else:
-    supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+# If using the standard Supabase Python client:
+# supabase: Client = create_client(supabase_url, supabase_key)
+
+# If you have a direct `Client` constructor:
+supabase: Client = Client(
+    supabase_url,
+    supabase_key
+)
 
 # Configure logfire to suppress warnings (optional)
 logfire.configure(send_to_logfire='never')
@@ -86,10 +94,10 @@ async def run_agent_with_streaming(user_input: str):
     while maintaining the entire conversation in `st.session_state.messages`.
     """
     try:
-        # Prepare dependencies using the (now valid) API key.
+        # Prepare dependencies using the user-provided API key
         deps = PydanticAIDeps(
             supabase=supabase,
-            openai_client=openai_client
+            openai_client=openai_client  # pass your openai client here
         )
 
         # Run the agent in a stream
@@ -121,7 +129,7 @@ async def run_agent_with_streaming(user_input: str):
             )
     except Exception as e:
         st.error("An error occurred while processing your request. Please check your API key and try again.")
-        # Optionally, log or print(e) for debugging.
+        # Optionally log the exception 'e' here
 
 async def main():
     st.title("Danish National Travel Survey RAG")
@@ -131,7 +139,7 @@ async def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display all messages from the conversation so far.
+    # Display all messages from the conversation so far
     for msg in st.session_state.messages:
         if isinstance(msg, (ModelRequest, ModelResponse)):
             for part in msg.parts:
@@ -141,7 +149,7 @@ async def main():
     user_input = st.chat_input("Which questions do you have about TU?")
 
     if user_input:
-        # Append a new request to the conversation
+        # Append a new user request to the conversation
         st.session_state.messages.append(
             ModelRequest(parts=[UserPromptPart(content=user_input)])
         )
