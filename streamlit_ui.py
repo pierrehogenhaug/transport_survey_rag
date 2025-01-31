@@ -24,11 +24,22 @@ from pydantic_ai.messages import (
 )
 from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
-# Load environment variables
+# Load environment variables from .env
 from dotenv import load_dotenv
 load_dotenv()
 
-openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Let the user input an OpenAI API key via the sidebar.
+# If provided, it overrides the value from .env.
+user_api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password")
+if user_api_key:
+    api_key = user_api_key
+else:
+    api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize the OpenAI client with the determined API key.
+openai_client = AsyncOpenAI(api_key=api_key)
+
+# Initialize the Supabase client.
 supabase: Client = Client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_SERVICE_KEY")
@@ -42,7 +53,6 @@ class ChatMessage(TypedDict):
     role: Literal['user', 'model']
     timestamp: str
     content: str
-
 
 def display_message_part(part):
     """
@@ -63,13 +73,12 @@ def display_message_part(part):
         with st.chat_message("assistant"):
             st.markdown(part.content)
 
-
 async def run_agent_with_streaming(user_input: str):
     """
     Run the agent with streaming text for the user_input prompt,
     while maintaining the entire conversation in `st.session_state.messages`.
     """
-    # Prepare dependencies
+    # Prepare dependencies, including the freshly initialized openai_client.
     deps = PydanticAIDeps(
         supabase=supabase,
         openai_client=openai_client
@@ -103,7 +112,6 @@ async def run_agent_with_streaming(user_input: str):
             ModelResponse(parts=[TextPart(content=partial_text)])
         )
 
-
 async def main():
     st.title("Transportvaneundersøgelsen RAG")
     st.write("Stil spørgsmål om TU, f.eks til procedurer, metode eller resultater.")
@@ -113,10 +121,8 @@ async def main():
         st.session_state.messages = []
 
     # Display all messages from the conversation so far.
-    # Each message is either a ModelRequest or ModelResponse.
-    # We iterate over their parts to decide how to display them.
     for msg in st.session_state.messages:
-        if isinstance(msg, ModelRequest) or isinstance(msg, ModelResponse):
+        if isinstance(msg, (ModelRequest, ModelResponse)):
             for part in msg.parts:
                 display_message_part(part)
 
@@ -124,20 +130,18 @@ async def main():
     user_input = st.chat_input("Hvilke spørgsmål har du til Transportvaneundersøgelsen?")
 
     if user_input:
-        # We append a new request to the conversation explicitly
+        # Append a new request to the conversation explicitly
         st.session_state.messages.append(
             ModelRequest(parts=[UserPromptPart(content=user_input)])
         )
         
-        # Display user prompt in the UI
+        # Display the user prompt in the UI
         with st.chat_message("user"):
             st.markdown(user_input)
 
         # Display the assistant's partial response while streaming
         with st.chat_message("assistant"):
-            # Actually run the agent now, streaming the text
             await run_agent_with_streaming(user_input)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
