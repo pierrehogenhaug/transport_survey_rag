@@ -7,7 +7,7 @@ import streamlit as st
 import json
 import logfire
 from supabase import create_client, Client
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI  # Make sure this is the correct import for your version of OpenAI's API
 
 # ---------------
 # GET OPENAI KEY
@@ -17,7 +17,11 @@ if not api_key:
     st.error("OpenAI API key is required.")
     st.stop()
 
-openai_client = AsyncOpenAI(api_key=api_key)
+# Set the environment variable so that the OpenAI client can find it
+os.environ["OPENAI_API_KEY"] = api_key
+
+# Instantiate the OpenAI client without needing to pass the key explicitly
+openai_client = AsyncOpenAI()  # Alternatively, if your AsyncOpenAI accepts api_key as parameter, you could still pass it.
 
 # ---------------
 # GET SUPABASE SECRETS
@@ -29,12 +33,6 @@ try:
 except KeyError as err:
     st.write("Could not find Supabase credentials in secrets.")
     raise err
-
-# Optionally set environment variables if needed
-# os.environ["OPENAI_API_KEY"] = api_key
-
-# Optionally configure logfire
-logfire.configure(send_to_logfire='never')
 
 from rag_agent import pydantic_ai_expert, PydanticAIDeps
 from pydantic_ai.messages import (
