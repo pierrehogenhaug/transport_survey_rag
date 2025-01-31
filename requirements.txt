@@ -1,0 +1,11 @@
+streamlit
+requests
+logfire
+pydantic-ai
+openai
+supabase
+Crawl4AI
+httpx
+pydantic
+python-dotenv
+dataclasses-json

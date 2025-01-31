@@ -105,8 +105,8 @@ async def run_agent_with_streaming(user_input: str):
 
 
 async def main():
-    st.title("Danish National Travel Survey RAG")
-    st.write("Ask any question about The Danish National Travel Survey, including data procedures, methodology, or survey results.")
+    st.title("Transportvaneundersøgelsen RAG")
+    st.write("Stil spørgsmål om TU, f.eks til procedurer, metode eller resultater.")
 
     # Initialize chat history in session state if not present
     if "messages" not in st.session_state:
@@ -121,7 +121,7 @@ async def main():
                 display_message_part(part)
 
     # Chat input for the user
-    user_input = st.chat_input("What questions do you have about The Danish National Travel Survey?")
+    user_input = st.chat_input("Hvilke spørgsmål har du til Transportvaneundersøgelsen?")
 
     if user_input:
         # We append a new request to the conversation explicitly
