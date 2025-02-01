@@ -1,8 +1,8 @@
 # Danish National Travel Survey RAG App
 
-A Retrieval-Augmented Generation (RAG) application built to help answer questions about the Danish National Travel Survey (TU). The app retrieves, processes, and indexes the TU documentation, and lets users query all data found on the TU website (\url{https://www.man.dtu.dk/myndighedsbetjening/transportvaneundersoegelsen-tu-}) quickly and intuitively.
-If the app is still active: \url{https://transportsurveyrag.streamlit.app/}.
+A Retrieval-Augmented Generation (RAG) application built to help answer questions about the Danish National Travel Survey (TU). 
 ---
+The app retrieves, processes, and indexes the TU documentation, and lets users query all data found on the [TU website](https://www.man.dtu.dk/myndighedsbetjening/transportvaneundersoegelsen-tu-) quickly and intuitively. If the app is still active: [https://transportsurveyrag.streamlit.app/](https://transportsurveyrag.streamlit.app/).
 
 ## Overview
 
