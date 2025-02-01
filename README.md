@@ -111,3 +111,12 @@ Provides the interactive user interface using Streamlit. Users can input queries
 
 `rag_agent.py`
 Contains the core logic for the retrieval-augmented generation (RAG) agent. It uses Pydantic AI to manage tool functions for fetching and formatting the relevant documentation.
+
+--- 
+
+## Deployment
+**Streamlit Cloud:**
+The application is hosted on Streamlit Cloud. Configure your environment variables in the secrets.toml file for a secure deployment.
+
+**Local Deployment:**
+Follow the steps above to set up your environment locally. Once configured, you can run the app with `streamlit run streamlit_ui.py` and test all functionalities on your own machine.
