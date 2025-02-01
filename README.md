@@ -1,10 +1,9 @@
 # Danish National Travel Survey RAG App
-![](https://github.com/pierrehogenhaug/transport_survey_rag/blob/main/transport_rag_gif.gif)
-
-
 A RAG application built to answer questions about the Danish National Travel Survey (TU). 
 ---
 The app retrieves, processes, and indexes the TU documentation, and lets users query all data found on the [TU website](https://www.man.dtu.dk/myndighedsbetjening/transportvaneundersoegelsen-tu-) quickly and intuitively. 
+
+![](https://github.com/pierrehogenhaug/transport_survey_rag/blob/main/transport_rag_gif.gif)
 
 If the app is still active, you can launch it here: [https://transportsurveyrag.streamlit.app/](https://transportsurveyrag.streamlit.app/).
 
