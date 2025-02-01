@@ -60,5 +60,11 @@ This project was developed to support DTU Management that manages and communicat
 
    ```bash
    git clone https://github.com/your-username/danish-national-travel-survey-rag-app.git
-   cd danish-national-travel-survey-rag-app
+   cd transport_survey_rag
+   
+2. **Create and Activate a Virtual Environment:**
+   ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # On macOS/Linux
+    venv\Scripts\activate     # On Windows
 
