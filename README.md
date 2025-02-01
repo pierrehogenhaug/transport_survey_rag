@@ -1,4 +1,6 @@
 # Danish National Travel Survey RAG App
+![](https://github.com/pierrehogenhaug/transport_survey_rag/blob/main/transport_rag_gif.gif)
+
 
 A RAG application built to answer questions about the Danish National Travel Survey (TU). 
 ---
