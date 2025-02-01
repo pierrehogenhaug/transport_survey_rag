@@ -54,8 +54,6 @@ This project was developed to support DTU Management that manages and communicat
 
 ## Installation & Setup
 
-## Installation & Setup
-
 1. **Clone the Repository:**
 
    ```bash
@@ -67,4 +65,39 @@ This project was developed to support DTU Management that manages and communicat
     python3 -m venv venv
     source venv/bin/activate  # On macOS/Linux
     venv\Scripts\activate     # On Windows
+
+4. **Install Dependencies:**
+Install the required Python packages via pip:
+   ```bash
+    pip install -r requirements.txt
+
+5. **Configure Environment Variables:**
+Create a .env file in the project root and add your credentials:
+   ```bash
+    OPENAI_API_KEY=your_openai_api_key_here
+    SUPABASE_URL=your_supabase_url_here
+    SUPABASE_SERVICE_KEY=your_supabase_service_key_here
+
+6. **Run the Data Pipeline:**
+The crawler script will fetch and process TU documentation, then store the chunks in Supabase.
+   ```bash
+    python crawler.py
+
+6. **Launch the Interactive App:**
+Start the Streamlit app with:
+   ```bash
+    streamlit run streamlit_ui.py
+When the app loads, enter your OpenAI API key in the sidebar as prompted.
+
+---
+
+## Usage
+Once the app is running, you can:
+
+**Ask Questions**:
+Type any query related to the Danish National Travel Survey into the chat input. The system will convert your query into an embedding, search the indexed documentation, and display an answer with relevant source excerpts.
+
+**Explore Documentation**:
+The built-in tools allow you to retrieve full documentation pages or a list of available pages for further exploration.
+
 
