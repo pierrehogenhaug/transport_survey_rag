@@ -66,19 +66,19 @@ This project was developed to support DTU Management that manages and communicat
     source venv/bin/activate  # On macOS/Linux
     venv\Scripts\activate     # On Windows
 
-4. **Install Dependencies:**
+3. **Install Dependencies:**
 Install the required Python packages via pip:
    ```bash
     pip install -r requirements.txt
 
-5. **Configure Environment Variables:**
+4. **Configure Environment Variables:**
 Create a .env file in the project root and add your credentials:
    ```bash
     OPENAI_API_KEY=your_openai_api_key_here
     SUPABASE_URL=your_supabase_url_here
     SUPABASE_SERVICE_KEY=your_supabase_service_key_here
 
-6. **Run the Data Pipeline:**
+5. **Run the Data Pipeline:**
 The crawler script will fetch and process TU documentation, then store the chunks in Supabase.
    ```bash
     python crawler.py
@@ -100,4 +100,14 @@ Type any query related to the Danish National Travel Survey into the chat input.
 **Explore Documentation**:
 The built-in tools allow you to retrieve full documentation pages or a list of available pages for further exploration.
 
+---
 
+## Project Structure
+`crawler.py`
+Handles the retrieval, processing, and storage of TU documentation. This includes crawling the TU pages, converting content to Markdown, chunking the text, generating titles and summaries with GPT, and saving everything to Supabase.
+
+**streamlit_ui.py**
+Provides the interactive user interface using Streamlit. Users can input queries and receive contextual responses based on the processed documentation.
+
+**rag_agent.py**
+Contains the core logic for the retrieval-augmented generation (RAG) agent. It uses Pydantic AI to manage tool functions for fetching and formatting the relevant documentation.
