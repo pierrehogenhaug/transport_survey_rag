@@ -54,4 +54,11 @@ This project was developed to support DTU Management that manages and communicat
 
 ## Installation & Setup
 
+## Installation & Setup
+
 1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/your-username/danish-national-travel-survey-rag-app.git
+   cd danish-national-travel-survey-rag-app
+
