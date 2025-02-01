@@ -106,8 +106,8 @@ The built-in tools allow you to retrieve full documentation pages or a list of a
 `crawler.py`
 Handles the retrieval, processing, and storage of TU documentation. This includes crawling the TU pages, converting content to Markdown, chunking the text, generating titles and summaries with GPT, and saving everything to Supabase.
 
-**streamlit_ui.py**
+`streamlit_ui.py`
 Provides the interactive user interface using Streamlit. Users can input queries and receive contextual responses based on the processed documentation.
 
-**rag_agent.py**
+`rag_agent.py`
 Contains the core logic for the retrieval-augmented generation (RAG) agent. It uses Pydantic AI to manage tool functions for fetching and formatting the relevant documentation.
